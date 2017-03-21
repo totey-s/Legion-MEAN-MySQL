@@ -32,6 +32,8 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 	})
 	.when('/profile/yourprojects', {
 		templateUrl:'app/views/pages/users/yourprojects.html',
+		controller: 'projectCtrl',
+		controllerAs: 'project',
 		authenticated: true
 	})
 	.when('/profile/fundedprojects', {
@@ -44,7 +46,14 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 		controllerAs: 'management',
 		authenticated: true,
 		permission: ['admin', 'moderator']
-	})	
+	})
+	.when('/management/projects', {
+		templateUrl:'app/views/pages/management/projects.html',
+		controller: 'projectManagementCtrl',
+		controllerAs: 'projectManagement',
+		authenticated: true,
+		permission: ['admin', 'moderator']
+	})		
 	.when('/edit/:id', {
 		templateUrl:'app/views/pages/management/edit.html',
 		controller: 'editCtrl',

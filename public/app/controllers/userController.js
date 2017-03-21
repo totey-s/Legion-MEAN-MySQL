@@ -38,10 +38,10 @@ app.controller('registerController', function($http, $location, $timeout, User){
 		appData.usernameMsg = false;
 		appData.usernameInvalid = false;
 		User.checkUsername(appData.regData).then(function(data){
-			//console.log(data);
+			console.log(data);
 			if(data.data.success){
 				appData.checkingUsername = false;
-				appData.usernameInvalid = false;
+				appData.usernameInvalid = false;				
 				appData.usernameMsg = data.data.message;
 			}else{
 				appData.checkingUsername = false;

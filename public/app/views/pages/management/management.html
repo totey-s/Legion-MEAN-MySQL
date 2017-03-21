@@ -1,6 +1,12 @@
-<div class="container">
+<div class="container-fluid">
 	<div class="row">
-		<div class="col-lg-8 col-lg-offset-2">
+	<div class="col-sm-3 col-md-2 sidebar">            
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="/management">User Management</a></li>
+            <li><a href="/management/projects">Projects to Approve</a></li>            
+          </ul>
+        </div>
+		<div class="col-sm-9 col-md-10 col-lg-9">
 		    <div id="legend">
 		      <h3>User Management</h3>
 		    </div>
@@ -15,7 +21,10 @@
 
 	<br/>
 		
-		<div class="row">
+	<div class="row">
+		<div class="col-sm-3 col-md-2 sidebar"></div>
+		<div class="col-sm-9 col-md-10">
+			<div class="row">				
 			<div class="showmore">
 				<div class="col-lg-6">
 					<div class="input-group">
@@ -27,9 +36,24 @@
 			<div class="col-lg-6">
 				<button type="button" ng-click="management.showMore(number);" class="btn btn-success">Apply Filter</button>
 				<button type="button" ng-click="management.showAll();" class="btn btn-warning">Show All</button>				
-			</div>	
+			</div>				
 		</div>
-		
+
+		<!-- Filter Search -->
+		<div class="row">
+			<div class="navbar-form">
+				<div class="form-group">
+					<input type="text" name="search" placeholder="Search..." ng-model="searchKeyword" class="form-control">
+				</div>
+			<button type="button" ng-click="management.search(searchKeyword, number);" class="btn btn-default">Search</button>
+			<button type="button" ng-click="management.clear();" class="btn btn-default">Clear</button>
+			<a href="/search">
+				<button type="button" class="btn btn-default">Advanced Search</button>
+			</a>
+			</div>
+		</div>
+
+
 		<br/>
 		<br/>
 
@@ -54,7 +78,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr ng-repeat="person in management.users | limitTo: management.limit">
+				<tr ng-repeat="person in management.users | filter:searchFilter | limitTo: management.limit">
 					<td>{{person.firstname +" "+ person.lastname}}</td>
 					<td>{{person.username}}</td>
 					<td>{{person.email}}</td>					
@@ -64,7 +88,7 @@
 					<td ng-if="person.active == false">InActive</td>
 					<td>{{person.permission}}</td>
 					<td>
-						<a href="/edit/{{person.id}}"><button type="button" ng-show="management.editAccess" class="btn btn-primary">Edit</button></a>
+						<a href="/edit/{{person.userId}}"><button type="button" ng-show="management.editAccess" class="btn btn-primary">Edit</button></a>
 						<span ng-if="person.username != management.curUser">
 							<button type="button" ng-click="management.deleteUser(person.username)" ng-show="management.deleteAccess" class="btn btn-danger">Delete</button>
 						</span>						
@@ -91,6 +115,12 @@
 				<button type="button" ng-click="management.showAll();" class="btn btn-warning">Show All</button>				
 			</div>	
 		</div>
+		</div>
+	</div>
+
+
+
+		
 
 	<br/>
 

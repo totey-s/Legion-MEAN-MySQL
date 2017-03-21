@@ -263,4 +263,22 @@ var app = angular.module('managementController',[])
             }
         });
     };
+
+
+    app.search = function(searchKeyword, number){
+    	if(searchKeyword){
+    		if(searchKeyword.length>0){
+    			
+    		}else{
+    			$scope.searchFilter = undefined;
+    			app.limit = 0;	
+    		}
+    	}else{
+    		$scope.searchFilter = undefined;
+    		app.limit = 0;
+    	}
+    };
+    app.clear = function(){
+    	
+    };
 });

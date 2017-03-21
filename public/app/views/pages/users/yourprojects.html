@@ -11,16 +11,133 @@
        		<h2>Your Projects</h2>          
         </div>
         <div class="col-lg-1">
-          <a href="#">
+          <a href="#" ng-click="project.showModal();">
             <span class="glyphicon glyphicon-plus">Add</span>
            </a> 
         </div>
-    </div>
+    </div> 
     <div class="row">
-      <div class="col-sm-3 col-md-2 sidebar">
+    <div class="col-sm-3 col-md-2 sidebar"></div>
+    <div class="col-sm-9 col-md-10">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Category</th>          
+            <th>Address</th> 
+            <th>Fund Goal</th> 
+            <th>Duration</th> 
+            <th>Authorized</th>
+            <th>Completed</th>
+            <th>Created On</th>
+            <th>Updated On</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-show="project.noProjects">
+            <td colspan="10" style="text-align: center;">No Projects Available</td>
+          </tr>
+          <tr ng-repeat="p in project.projects">
+            <td>{{p.title}}</td>
+            <td>{{p.description}}</td>
+            <td>{{p.category}}</td>
+            <td>{{p.address}}</td>
+            <td>{{p.goal}}</td>
+            <td>{{p.duration}}</td>
+            <td>{{p.authorized}}</td>
+            <td>{{p.complete}}</td>
+            <td>{{p.createdAt | date : "MMMM d, y h:mm a"}}</td>
+            <td>{{p.updatedAt | date : "MMMM d, y h:mm a"}}</td>         
+          </tr>
+          <tr></tr> 
+        </tbody>    
+      </table>
       </div>
-      <div class="col-lg-8">
-          <h2>New Project</h2>
-        </div>
     </div>
+    
 </div>  
+
+<div ng-show="project.load" class="loading"></div>
+<div class="row show-hide-message" ng-show="project.successMsg">
+  <div class="alert alert-success">{{project.successMsg}}</div>
+</div>
+
+<br/>
+
+<div class="row show-hide-message" ng-show="project.errorMsg">
+  <div class="alert alert-danger">{{project.errorMsg}}</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addProjectModal" role="dialog">
+  <div class="modal-dialog">
+  
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 style="color:#000" class="modal-title">Add Project</h4>
+      </div>
+      <div class="modal-body" style="background-color:grey">
+        <form id="addProjects" class="form-horizontal" ng-submit="project.addProject(projectData);">
+           <div class="margin-bottom-40" style="background-color:grey">
+            <div class="panel-heading">
+              <h3 class="panel-title"><i class="fa fa-tasks"></i> Horizontal Form</h3>
+            </div>
+            <div class="panel-body">
+              <form class="form-horizontal" role="form">
+                <div class="form-group">
+                  <label for="title" class="col-lg-2 control-label">Title</label>
+                  <div class="col-lg-10">
+                    <input type="text" id="title" name="title" ng-model="project.projectData.title" placeholder="Project Title" class="form-control">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="description" class="col-lg-2 control-label">Description</label>
+                  <div class="col-lg-10">
+                    <textarea id="description" rows="6" name="description" ng-model="project.projectData.description" placeholder="Project Description" class="form-control">
+                    </textarea>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="category" class="col-lg-2 control-label">Category</label>
+                  <div class="col-lg-10">                  
+                    <select id="category" name="category" ng-options="category.name for category in categories" ng-model="project.projectData.category" class="form-control"></select>
+                  </div>
+                </div> 
+                <div class="form-group">
+                  <label for="location" class="col-lg-2 control-label">Address</label>
+                  <div class="col-lg-10">
+                    <textarea id="address" rows="3" name="address" ng-model="project.projectData.address" placeholder="Address" class="form-control">
+                    </textarea>
+                  </div>
+                </div> 
+                <div class="form-group">
+                  <label for="goal" class="col-lg-2 control-label">Goal($)</label>
+                  <div class="col-lg-10">
+                    <input type="number" id="goal" name="goal" ng-model="project.projectData.goal" placeholder="Funding Goal" class="form-control">
+                  </div>
+                </div>     
+                <div class="form-group">
+                  <label for="duration" class="col-lg-4 control-label">Duration in Months</label>
+                  <div class="col-lg-8">
+                    <input type="number" id="duration" name="duration" ng-model="project.projectData.duration" placeholder="Project Duration" class="form-control">
+                  </div>
+                </div>         
+                <div class="form-group">
+                <div class="col-lg-10">
+                </div>
+                  <div class="col-lg-2">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </form>       
+      </div>
+    </div>
+    
+  </div>
+</div>

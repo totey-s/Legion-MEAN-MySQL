@@ -21,7 +21,7 @@ sequelize.authenticate().then(function(err){
 });
 
 var UserTable = sequelize.define('user', {
-	id: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+	userId: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
   	firstname: Sequelize.STRING,
   	lastname:	Sequelize.STRING,
   	email: Sequelize.STRING,
@@ -30,6 +30,31 @@ var UserTable = sequelize.define('user', {
   	permission: {type: Sequelize.STRING, allowNull: false, defaultValue: 'user'},
   	active: {type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true}
 });
+
+var ProjectTable = sequelize.define('projects', {
+	projectId: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+  	username: Sequelize.STRING,
+  	title:	Sequelize.STRING,
+  	description: Sequelize.STRING,
+  	category:	Sequelize.STRING,	  
+  	address: Sequelize.STRING,
+  	goal: Sequelize.INTEGER,
+  	duration: Sequelize.INTEGER,
+  	complete: {type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
+  	authorized: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 0},
+  	escalate: {type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
+  	escalateReason: {type: Sequelize.STRING}
+});
+
+UserTable.hasMany(ProjectTable, {
+	foreignKey: 'userId',
+	constraints: false,
+});
+
+ProjectTable.belongsTo(UserTable, {
+	foreignKey: 'userId'
+});
+
 //---------------------------------------------------------------------------------------------------
 
 module.exports = function(router){
@@ -109,7 +134,8 @@ module.exports = function(router){
 			  console.log(record.get({
 			    plain: true
 			  }));
-			  var token = jwt.sign({ fname: user.fname, lname: user.lname, username: user.username, email: user.email, active: user.active}, secret, {expiresIn: '24h'});
+			  console.log("UserId: "+record.userId);
+			  var token = jwt.sign({ userId: record.userId, fname: user.fname, lname: user.lname, username: user.username, email: user.email, active: user.active}, secret, {expiresIn: '24h'});
 			  res.json({success:true, message:'User Created successfully', token: token});
 			});
 			//-----------------------------------------------------------------------------------------------------------------------------
@@ -214,7 +240,7 @@ module.exports = function(router){
 					}
 					else
 					{
-						var token = jwt.sign({ fname: userData.dataValues.firstname, lname: userData.dataValues.lastname, username: userData.dataValues.username, 
+						var token = jwt.sign({ userId:userData.dataValues.userId, fname: userData.dataValues.firstname, lname: userData.dataValues.lastname, username: userData.dataValues.username, 
 							email: userData.dataValues.email, permission: userData.dataValues.permission, active: userData.dataValues.active }, 
 							secret, {expiresIn: '24h'});
 						//console.log(token);
@@ -375,7 +401,7 @@ module.exports = function(router){
 		//-------------------------MySQL---------------------------------------------------------------
 		if(permission === 'admin' || permission === 'moderator'){
 			UserTable.find({
-			  where: {id: editUser}
+			  where: {userId: editUser}
 			}).then(function(userData) {
 				if(!userData){
 					res.json({ success: false, message: 'No user was found' });
@@ -427,7 +453,7 @@ module.exports = function(router){
 		if(newfname || newlname){
 			if(permission === 'admin' || permission === 'moderator'){
 				UserTable.find({
-				  where: {id: editUser}
+				  where: {userId: editUser}
 				}).then(function(userData){
 					if(userData){
 						userData.updateAttributes({
@@ -449,7 +475,7 @@ module.exports = function(router){
 		if(newUsername){
 			if(permission === 'admin' || permission === 'moderator'){
 				UserTable.find({
-				  where: {id: editUser}
+				  where: {userId: editUser}
 				}).then(function(userData){
 					if(userData){
 						userData.updateAttributes({
@@ -472,7 +498,7 @@ module.exports = function(router){
 			if(permission === 'admin' || permission === 'moderator'){
 				console.log("in If for admin or moderator");
 				UserTable.find({
-				  where: {id: editUser}
+				  where: {userId: editUser}
 				}).then(function(userData){
 					if(userData){
 						userData.updateAttributes({
@@ -491,7 +517,7 @@ module.exports = function(router){
 			console.log("In Permissions");
 			if(permission === 'admin' || permission === 'moderator'){
 				UserTable.find({
-				  where: {id: editUser}
+				  where: {userId: editUser}
 				}).then(function(userData){
 					//console.log(userData);
 					if(userData){
@@ -748,6 +774,148 @@ module.exports = function(router){
 		//------------------------------------------------------------------------------------------------------------------------	
 	 });
 
+router.post('/addProject', function(req, res){			
+		console.log(req.body);
+		var title = req.body.title;
+		var description = req.body.description;
+		var category = req.body.category.name;
+		var address = req.body.address;
+		var goal = req.body.goal;
+		var duration = req.body.duration;
+		var username = req.decoded.username;
+		console.log("UserId: "+req.decoded.userId);
+		sequelize.sync().then(function() {				
+		  return ProjectTable.create({			  	
+		    username: username,
+		 	title:	title,
+		  	description: description,
+		  	category: category,	  
+		  	address: address,
+		  	goal: goal,
+		  	duration: duration,
+		  	userId: req.decoded.userId
+		  });
+		}).then(function(record) {
+		  console.log(record.get({
+		    plain: true
+		  }));		  
+		  res.json({success:true, message:'Project Created successfully'});
+		}).catch(function(err){
+			if(err) throw err;
+		});		
+	});
+
+router.get('/getAllProjects', function(req, res){
+	ProjectTable.findAll({
+	  where: {userId: req.decoded.userId}
+	}).then(function(projects){
+		if(projects){
+			console.log(projects.dataValues)
+			res.json({success: true, projects: projects});
+		}else{
+			res.json({success: false, message: "No Projects Found"});
+		}
+	}).catch(function(err){
+		if(err) console.log(err);
+	});
+	
+});
+
+router.get('/getAllUnapproved', function(req, res){
+	console.log("Permission: "+req.decoded.permission);
+	if(req.decoded.permission === 'admin'){
+		ProjectTable.findAll({
+		  where: {
+		  	authorized: 0,
+		  	escalate: true,
+		  }
+		}).then(function(projects){
+			if(projects){
+				console.log(projects.dataValues)
+				res.json({success: true, projects: projects, permission: req.decoded.permission});
+			}else{
+				res.json({success: false, message: "No Projects Found"});
+			}
+		}).catch(function(err){
+			if(err) console.log(err);
+		});
+	}else if(req.decoded.permission === 'moderator'){
+		ProjectTable.findAll({
+		  where: {authorized: 0}
+		}).then(function(projects){
+			if(projects){
+				console.log(projects.dataValues)
+				res.json({success: true, projects: projects, permission: req.decoded.permission});
+			}else{
+				res.json({success: false, message: "No Projects Found"});
+			}
+		}).catch(function(err){
+			if(err) console.log(err);
+		});
+	}
+	
+	
+});
+
+router.post('/approveProject', function(req, res){
+	console.log("/approveProject----"+req.body.id);
+	//res.json({success: true, message: req.body.id+' has been authorized.'});
+		
+	ProjectTable.find({
+		where: {projectId: req.body.id}
+	}).then(function(projectData){
+		if(projectData){
+			projectData.updateAttributes({
+				authorized:1
+			}).then(function(){
+				res.json({success: true, message: projectData.dataValues.title+' has been authorized.'});
+			});
+		} else{
+			res.json({success: false, message: "No such Project Found"});
+		}
+	}).catch(function(err){
+		if(err) console.log(err);
+	});
+	
+});
+
+router.post('/escalate', function(req, res){
+	ProjectTable.find({
+		where: {projectId: req.body.projectId}
+	}).then(function(projectData){
+		if(projectData){
+			projectData.updateAttributes({
+				escalate:true,
+				escalateReason: req.body.reason
+			}).then(function(){
+				res.json({success: true, message: projectData.dataValues.title+' has been escalated.'});
+			});
+		} else{
+			res.json({success: false, message: "No such Project Found"});
+		}
+	}).catch(function(err){
+		if(err) console.log(err);
+	});
+	
+});
+
+router.post('/decline', function(req, res){
+	ProjectTable.find({
+		where: {projectId: req.body.id}
+	}).then(function(projectData){
+		if(projectData){
+			projectData.updateAttributes({
+				authorized:-1
+			}).then(function(){
+				res.json({success: true, message: projectData.dataValues.title+' has been declined.'});
+			});
+		} else{
+			res.json({success: false, message: "No such Project Found"});
+		}
+	}).catch(function(err){
+		if(err) console.log(err);
+	});
+});
 
 	return router;
 }
