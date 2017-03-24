@@ -1,7 +1,8 @@
-var app = angular.module('managementController',[])
+var app = angular.module('managementController',['ui.bootstrap'])
 
-.controller('managementCtrl', function(User){
+.controller('managementCtrl', function(User, $scope){
 	var appData = this;
+	$scope.currentPage = 1;
 	
 	appData.loading = true;
 	appData.accessDenied = true;
@@ -15,6 +16,7 @@ var app = angular.module('managementController',[])
 			if(data.data.success){
 				if(data.data.permission === 'admin' || data.data.permission === 'moderator'){
 					appData.users = data.data.users;
+					$scope.userData = appData.users;
 					appData.loading = false;
 					appData.accessDenied = false;
 					appData.curUser = data.data.curUser;
@@ -59,7 +61,30 @@ var app = angular.module('managementController',[])
 				app.showMoreError = data.data.message;
 			}
 		});
-	}
+	};
+
+	 appData.search = function(searchKeyword, number){
+    	if(searchKeyword){
+    		if(searchKeyword.length>0){
+    			appData.limit = 0;
+    			$scope.searchFilter = searchKeyword;
+    			appData.limit = number;
+    		}else{
+    			$scope.searchFilter = undefined;
+    			appData.limit = 0;	
+    		}
+    	}else{
+    		$scope.searchFilter = undefined;
+    		appData.limit = 0;
+    	}
+    };
+    appData.clear = function(){
+    	$scope.number = 'Clear';
+    	appData.limit = 0;
+    	$scope.searchKeyword = undefined;
+    	$scope.searchFilter = undefined;
+    	appData.showMoreError = false;
+    };
 
 })
 
@@ -264,21 +289,10 @@ var app = angular.module('managementController',[])
         });
     };
 
+})
 
-    app.search = function(searchKeyword, number){
-    	if(searchKeyword){
-    		if(searchKeyword.length>0){
-    			
-    		}else{
-    			$scope.searchFilter = undefined;
-    			app.limit = 0;	
-    		}
-    	}else{
-    		$scope.searchFilter = undefined;
-    		app.limit = 0;
-    	}
-    };
-    app.clear = function(){
-    	
-    };
+.filter('pagination', function(){	
+	return function(data, start){		
+		return data.slice(start);
+	};
 });

@@ -1,5 +1,94 @@
 var app = angular.module('projectController',['projectServices']);
 
+app.controller('exploreProjectCtrl', function($scope, Project){
+	var appData = this;
+
+	$scope.currentPage = 1;
+	
+	appData.limit = 5;
+	appData.loading = true;
+	//console.log("In Project Explore");
+
+	var showApprovedProjects = function(){		
+		//console.log("In showApprovedProjects");
+		Project.getAllApprovedProjects().then(function(data){	
+			appData.loading = false;		
+			//console.log(data.data.projects);			
+			if(data.data.projects.length !== 0){
+				appData.projects = data.data.projects;
+				$scope.projects = appData.projects;
+				$scope.curUser = data.data.curUser;
+				appData.noProjects = false;
+			}else{
+				appData.noProjects = true;
+			}
+			
+		});
+	};
+	
+	showApprovedProjects();
+
+	appData.fund = function(projectId){
+		console.log(projectId);
+		Project.fund(projectId).then(function(data){
+
+		});
+	};
+
+	appData.showMore = function(number){
+		appData.showMoreError = false;
+		if(number>0){
+			appData.limit = number;
+		}else{
+			appData.showMoreError = 'Please enter a valid number';
+		}
+	};
+
+	appData.showAll = function(){
+		appData.limit = undefined;
+		appData.showMoreError = false;
+	};
+
+	appData.search = function(searchKeyword, number){
+    	if(searchKeyword){
+    		if(searchKeyword.length>0){
+    			appData.limit = 0;
+    			$scope.searchFilter = searchKeyword;
+    			appData.limit = number;
+    		}else{
+    			$scope.searchFilter = undefined;
+    			appData.limit = 0;	
+    		}
+    	}else{
+    		$scope.searchFilter = undefined;
+    		appData.limit = 0;
+    	}
+    };
+
+	appData.clear = function(){
+    	$scope.number = 'Clear';
+    	appData.limit = 0;
+    	$scope.searchKeyword = undefined;
+    	$scope.searchFilter = undefined;
+    	appData.showMoreError = false;
+    };
+
+    //---------------------PayPal------------------------------------------------------------------
+});
+
+app.filter('pagination', function(){	
+	return function(data, start){	
+	if(data !== undefined){
+		return data.slice(start);
+	}			
+	};
+});
+
+app.controller('fundProjectCtrl', function($scope, $routeParams){
+	var app = this;
+	console.log($routeParams.id);
+});
+
 app.controller('projectCtrl',['$scope', 'Project', function($scope, Project){
 	console.log("Project Controller");	
 	var appData = this;
@@ -30,7 +119,7 @@ app.controller('projectCtrl',['$scope', 'Project', function($scope, Project){
 	}
 
 	var showProjectsOfCurrentUser = function(){		
-		Project.getAll().then(function(data){			
+		Project.getAllUserProjects().then(function(data){			
 			console.log(data.data.projects);
 			if(data.data.projects.length !== 0){
 				appData.projects = data.data.projects;	
@@ -142,3 +231,4 @@ app.controller('projectManagementCtrl', function($scope, Project, $timeout){
 		});
 	}
 });
+

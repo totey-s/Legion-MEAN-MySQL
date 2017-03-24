@@ -1,3 +1,4 @@
+<div class="content-section-a">
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">            
@@ -28,7 +29,7 @@
             <th>Address</th> 
             <th>Fund Goal</th> 
             <th>Duration</th> 
-            <th>Authorized</th>
+            <th>Approved</th>
             <th>Completed</th>
             <th>Created On</th>
             <th>Updated On</th>
@@ -45,7 +46,11 @@
             <td>{{p.address}}</td>
             <td>{{p.goal}}</td>
             <td>{{p.duration}}</td>
-            <td>{{p.authorized}}</td>
+            <td>
+              <span ng-if="p.authorized == 0">Pending</span>
+              <span ng-if="p.authorized == 1">Yes</span>
+              <span ng-if="p.authorized == -1">No</span>
+            </td>
             <td>{{p.complete}}</td>
             <td>{{p.createdAt | date : "MMMM d, y h:mm a"}}</td>
             <td>{{p.updatedAt | date : "MMMM d, y h:mm a"}}</td>         
@@ -140,4 +145,5 @@
     </div>
     
   </div>
+</div>
 </div>

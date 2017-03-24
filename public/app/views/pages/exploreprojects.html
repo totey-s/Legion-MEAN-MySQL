@@ -1,0 +1,153 @@
+<script>
+
+    // Render the PayPal button
+
+    paypal.Button.render({
+
+        // Set your environment
+
+        env: 'sandbox', // sandbox | production
+
+        // PayPal Client IDs - replace with your own
+        // Create a PayPal app: https://developer.paypal.com/developer/applications/create
+
+        client: {
+            sandbox:    'AZDxjDScFpQtjWTOUtWKbyN_bDt4OgqaF4eYXlewfBP4-8aqX3PiV8e1GWU6liB2CUXlkA59kJXE7M6R',
+            production: 'Aco85QiB9jk8Q3GdsidqKVCXuPAAVbnqm0agscHCL2-K2Lu2L6MxDU2AwTZa-ALMn_N0z-s2MXKJBxqJ'
+        },
+
+        // Wait for the PayPal button to be clicked
+
+        payment: function() {
+
+            // Make a client-side call to the REST api to create the payment
+
+            return paypal.rest.payment.create(this.props.env, this.props.client, {
+                transactions: [
+                    {
+                        amount: { total: '0.01', currency: 'USD' }
+                    }
+                ]
+            });
+        },
+
+        // Wait for the payment to be authorized by the customer
+
+        onAuthorize: function(data, actions) {
+
+            // Execute the payment
+
+            return actions.payment.execute().then(function() {
+                document.querySelector('#paypal-button-container').innerText = 'Payment Complete!';
+            });
+        }
+
+    }, '#paypal-button-container');
+
+</script>
+<div class="content-section-a">
+<div class="container-fluid">
+	<div class="row">		
+		<div class="col-sm-12 col-md-12">
+			<div class="row">				
+			<div class="showmore">
+				<div class="col-lg-6">
+					<div class="input-group">
+						<span class="input-group-addon">Results to display:</span>
+						<input type="text" class="form-control" ng-model="number">
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<button type="button" ng-click="exploreProject.showMore(number);" class="btn btn-success">Apply Filter</button>
+				<button type="button" ng-click="exploreProject.showAll();" class="btn btn-warning">Show All</button>				
+			</div>				
+		</div>
+
+		<!-- Filter Search -->
+		<div class="row">
+			<div class="navbar-form">
+				<div class="form-group">
+					<input type="text" name="search" placeholder="Search..." ng-model="searchKeyword" class="form-control">
+				</div>
+			<button type="button" ng-click="exploreProject.search(searchKeyword, number);" class="btn btn-default">Search</button>
+			<button type="button" ng-click="exploreProject.clear();" class="btn btn-default">Clear</button>
+			</div>
+		</div>
+
+		<br/>
+
+		<div class="row">
+			<div class="col-lg-3">
+				<div ng-show="searchFilter !== undefined">
+					<p><strong>Total Results: </strong>{{(exploreProject.users | filter:searchFilter).length}}</p>					
+				</div>
+			</div>	
+			<div class="col-lg-3">
+				<div ng-show="searchFilter !== undefined">
+					<p><strong>Showing: </strong>{{(exploreProject.users | filter:searchFilter | limitTo: exploreProject.limit).length}}</p>
+				</div>
+			</div>
+		</div>			
+
+		<div class="row show-hide-message" ng-show="exploreProject.showMoreError">
+			<div class="alert alert-danger">{{exploreProject.showMoreError}}</div>
+		</div>		
+
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Title</th>
+		            <th>Description</th>
+		            <th>Category</th>
+		            <th>Creator</th>		                      
+		            <th>Address</th> 
+		            <th>Fund Goal</th> 
+		            <th>Duration</th>		            
+		            <th>Created On</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-show="exploreProject.noProjects">
+	            	<td colspan="10" style="text-align: center;">No Projects Available</td>
+	          	</tr>
+				<tr ng-repeat="p in projects | pagination: (currentPage - 1) * exploreProject.limit | filter:searchFilter | limitTo: exploreProject.limit">
+					<td>{{p.title}}</td>
+		            <td>{{p.description}}</td>
+		            <td>{{p.category}}</td>
+		            <td>{{p.firstname}} {{p.lastname}}</td>
+		            <td>{{p.address}}</td>
+		            <td>{{p.goal}}</td>
+		            <td>{{p.duration}}</td>		            
+		            <td>{{p.createdAt | date : "MMMM d, y h:mm a"}}</td>
+		            <td>
+		            	<!-- <div id="paypal-button-container"></div> -->
+		            	<a href="/fundProject/{{p.projectId}}"><button ng-show="curUser != p.username" type="button" class="btn btn-primary">Fund</button></a>
+		            </td>
+				</tr>
+				<tr></tr>	
+			</tbody>		
+		</table>
+		<ul uib-pagination total-items="projects.length" items-per-page="exploreProject.limit" ng-model="currentPage"></ul>
+		<br/>
+		<br/>
+
+		<div class="row">
+			<div class="showmore">
+				<div class="col-lg-6">
+					<div class="input-group">
+						<span class="input-group-addon">Results to display:</span>
+						<input type="text" class="form-control" ng-model="number">
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-6">
+				<button type="button" ng-click="exploreProject.showMore(number);" class="btn btn-success">Apply Filter</button>
+				<button type="button" ng-click="exploreProject.showAll();" class="btn btn-warning">Show All</button>				
+			</div>	
+		</div>
+		</div>
+	</div>
+</div>	
+</div>

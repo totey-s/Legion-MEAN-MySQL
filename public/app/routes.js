@@ -30,6 +30,11 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 		templateUrl:'app/views/pages/users/profile.html',
 		authenticated: true	
 	})
+	.when('/exploreProjects', {
+		templateUrl:'app/views/pages/exploreprojects.html',		
+		controller: 'exploreProjectCtrl',
+		controllerAs: 'exploreProject'
+	})	
 	.when('/profile/yourprojects', {
 		templateUrl:'app/views/pages/users/yourprojects.html',
 		controller: 'projectCtrl',
@@ -53,7 +58,7 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 		controllerAs: 'projectManagement',
 		authenticated: true,
 		permission: ['admin', 'moderator']
-	})		
+	})	
 	.when('/edit/:id', {
 		templateUrl:'app/views/pages/management/edit.html',
 		controller: 'editCtrl',
@@ -61,6 +66,12 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 		authenticated: true,
 		permission: ['admin', 'moderator']
 	})
+	.when('/fundProject/:id', {
+		templateUrl:'app/views/pages/users/fundProject.html',		
+		controller: 'fundProjectCtrl',
+		controllerAs: 'fundProject',
+		authenticated: true
+	})	
 	.otherwise({redirectTo:'/'});	
 }]);	
 
@@ -86,7 +97,7 @@ app.run(['$rootScope', 'Auth', '$location', 'User', function($rootScope, Auth, $
 					event.preventDefault();
 					$location.path('/profile');
 				}	
-			}			
+			}
 		}		
 	});	
 }]);

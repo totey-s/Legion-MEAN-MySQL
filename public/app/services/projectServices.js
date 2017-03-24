@@ -8,8 +8,12 @@ app.factory('Project', function($http){
 		return $http.post('/api/addProject', projectData);
 	};
 
-	projectFactory.getAll = function(){
-		return $http.get('/api/getAllProjects');	
+	projectFactory.getAllApprovedProjects = function(){
+		return $http.get('/api/getAllApprovedProjects');	
+	};	
+
+	projectFactory.getAllUserProjects = function(){
+		return $http.get('/api/getAllUserProjects');	
 	};
 
 	projectFactory.getAllUnapproved = function(){

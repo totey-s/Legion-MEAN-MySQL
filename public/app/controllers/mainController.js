@@ -1,6 +1,6 @@
-var app = angular.module('mainController', ['authServices', 'userServices']);
+var app = angular.module('mainController', ['authServices', 'userServices', 'projectServices']);
 
-app.controller('mainCtrl', function(Auth, $timeout, $location, $rootScope, User, $interval, $window, $route, AuthToken){
+app.controller('mainCtrl', function(Auth, $timeout, $location, $rootScope, User, $interval, $window, $route, AuthToken, Project){
 	var appData = this;	
 	appData.loadme = false;
 	
@@ -92,7 +92,16 @@ app.controller('mainCtrl', function(Auth, $timeout, $location, $rootScope, User,
 		}, 1000);
 	};
 
-	$rootScope.$on('$routeChangeStart', function(){	
+	$rootScope.$on('$routeChangeStart', function(){
+		
+		if((!$location.url().includes("about")) && (!$location.url().includes("contact")) && (!$location.url().includes("services")) && 
+			($location.url() != '/')){
+			$('.intro-header').hide();	
+		}else if($location.url().includes("about") || $location.url().includes("contact") || $location.url().includes("services") || 
+			$location.url() == '/'){
+			$('.intro-header').show();	
+		}
+		
 		if(!appData.checkingSession){
 			appData.checkSession();
 		}
