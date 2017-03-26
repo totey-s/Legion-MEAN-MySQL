@@ -33,5 +33,36 @@ app.factory('Project', function($http){
 		return $http.post('/api/decline', projectData);	
 	}
 
+	projectFactory.checkout = function(payload){
+		return $http.post('/api/checkout', payload);
+	}
+
+	projectFactory.getClientToken = function(){
+		return $http.get('/api/client_token');	
+	}
+
+	projectFactory.pay = function(payload){
+		return $http.post('/api/pay', payload);
+	}	
+
+	projectFactory.getAllFunded = function(){
+		return $http.get('/api/getAllFunded');
+	}
+
+	projectFactory.getTopProjects = function(){
+		console.log('getTopProjects service');
+		return $http.get('/api/getTopProjects');	
+	}
+
+
+	var data = [];
+	projectFactory.addData = function(obj){
+		data.push(obj);
+	}
+
+	projectFactory.getData = function(){
+		return data;
+	}
+
 	return projectFactory;
 });

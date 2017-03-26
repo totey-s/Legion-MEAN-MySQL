@@ -12,5 +12,47 @@
        		<h2>Funded Projects</h2>
         </div>
     </div>
+    <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar"></div>
+    <div class="col-sm-9 col-md-10">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Category</th>          
+            <th>Address</th> 
+            <th>Amount Pledged</th> 
+            <th>Name on Card</th>             
+            <th>Created On</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-show="fundedProject.noProjects">
+            <td colspan="10" style="text-align: center;">No Projects Available</td>
+          </tr>
+          <tr ng-repeat="p in fundedProject.projects">
+            <td>{{p.title}}</td>
+            <td>{{p.description}}</td>
+            <td>{{p.category}}</td>
+            <td>{{p.address}}</td>
+            <td>{{p.amount}}</td>
+            <td>{{p.nameoncard}}</td>
+            <td>{{p.createdAt | date : "MMMM d, y h:mm a"}}</td>
+          </tr>
+          <tr></tr> 
+        </tbody>    
+      </table>
+      </div>
+    </div>
 </div>  
 </div>
+
+<div class="loader" ng-show="fundedProject.loading">
+        <div id="img1" class="img">
+        </div>
+        <div id="img2" class="img"></div>
+        <div id="img3" class="img"></div>
+        <div id="img4" class="img"></div>
+        <div id="img5" class="img"></div>
+    </div>

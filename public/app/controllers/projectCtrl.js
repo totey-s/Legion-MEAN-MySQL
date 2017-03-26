@@ -9,6 +9,11 @@ app.controller('exploreProjectCtrl', function($scope, Project){
 	appData.loading = true;
 	//console.log("In Project Explore");
 
+	console.log(Project.getData().length);
+	if(Project.getData().length>0){
+		appData.showSuccess = Project.getData();	
+	}	
+
 	var showApprovedProjects = function(){		
 		//console.log("In showApprovedProjects");
 		Project.getAllApprovedProjects().then(function(data){	
@@ -72,6 +77,12 @@ app.controller('exploreProjectCtrl', function($scope, Project){
     	$scope.searchFilter = undefined;
     	appData.showMoreError = false;
     };
+    //-------------------Model Amount-------------------------------
+	appData.showModal = function(projectId){
+		appData.projectId = projectId;
+		console.log(appData.projectId);
+		$("#amountModel").modal({backdrop: "static"});
+	};
 
     //---------------------PayPal------------------------------------------------------------------
 });
@@ -84,9 +95,64 @@ app.filter('pagination', function(){
 	};
 });
 
-app.controller('fundProjectCtrl', function($scope, $routeParams){
-	var app = this;
+app.controller('fundProjectCtrl', function($scope, $routeParams, Project, $location){
+	$("#amountModel").modal("hide");
+	var appData = this;
 	console.log($routeParams.id);
+	appData.loading = false;
+
+	appData.clientToken = function(){
+		console.log('in clientToken');
+		var colorTransition = 'color 160ms linear';
+		Project.getClientToken().then(function(data){
+			var clientToken = data.data;
+			//--------Braintree Payment Gateway--------------------------
+			// braintree.setup(clientToken, "custom", {
+			//   id: "example-form",
+			//   hostedFields: {
+			//     number: {
+			//       selector: "#card-number",
+			//       placeholder: "Card Number"
+			//     },
+			//     styles: {
+			//       '.invalid': {
+			//         'color': '#D0041D'
+			//       }
+			//     }
+			//   },
+			// });
+			//-----------------------------------------------------------
+		});	
+	};
+	//appData.clientToken();
+
+	$('form').card({
+	    container: '.card-wrapper',
+	    width: 280,
+
+	    formSelectors: {
+	        nameInput: 'input[name="first-name"], input[name="last-name"]'
+	    }
+	});
+
+	appData.fund = function(cardInfo){
+		appData.loading = true;
+		var payload = {};
+		console.log('in Fund');
+		console.log(appData.cardInfo);
+		console.log($routeParams.id);
+		var id = $routeParams.id.split('_');
+		payload = {cardInfo: appData.cardInfo, projectId: id[0], amount: id[1]};
+		console.log(payload);
+		Project.pay(payload).then(function(data){
+			appData.loading = false;
+			if(data.data.success){
+				console.log(data.data.message);	
+				Project.addData(data.data.message);
+				$location.path('/exploreProjects');				
+			}			
+		});
+	};
 });
 
 app.controller('projectCtrl',['$scope', 'Project', function($scope, Project){
@@ -232,3 +298,28 @@ app.controller('projectManagementCtrl', function($scope, Project, $timeout){
 	}
 });
 
+app.controller('fundedProjectCtrl', function(Project){
+	console.log("Project Controller");	
+	var appData = this;
+
+	appData.noProjects = true;
+	appData.load = false;
+
+	var showAllFundedProjects = function(){
+		appData.load = true;		
+		appData.isAdmin = false;
+		appData.isModerator = false;
+		Project.getAllFunded().then(function(data){	
+		appData.load = false;
+		console.log(data.data.projects);					
+			if(data.data.projects.length !== 0){
+				appData.projects = data.data.projects;			
+				appData.noProjects = false;
+			}else{
+				appData.noProjects = true;
+			}
+			
+		});
+	};
+	showAllFundedProjects();
+});

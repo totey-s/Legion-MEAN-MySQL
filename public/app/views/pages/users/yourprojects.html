@@ -63,7 +63,15 @@
     
 </div>  
 
-<div ng-show="project.load" class="loading"></div>
+<!-- <div ng-show="project.load" class="loading"></div> -->
+<div class="loader" ng-show="project.load">
+        <div id="img1" class="img">
+        </div>
+        <div id="img2" class="img"></div>
+        <div id="img3" class="img"></div>
+        <div id="img4" class="img"></div>
+        <div id="img5" class="img"></div>
+    </div>
 <div class="row show-hide-message" ng-show="project.successMsg">
   <div class="alert alert-success">{{project.successMsg}}</div>
 </div>

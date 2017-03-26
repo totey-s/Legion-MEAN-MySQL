@@ -43,6 +43,8 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 	})
 	.when('/profile/fundedprojects', {
 		templateUrl:'app/views/pages/users/fundedprojects.html',
+		controller: 'fundedProjectCtrl',
+		controllerAs: 'fundedProject',
 		authenticated: true
 	})
 	.when('/management', {

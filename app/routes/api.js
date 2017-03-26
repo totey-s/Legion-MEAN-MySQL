@@ -3,6 +3,17 @@ var jwt = require('jsonwebtoken');
 var secret = 'kickstarter';
 var bcrypt = require('bcrypt-nodejs');
 
+//------------------------------------Braintree Payment Gateway --- Step 1------------------------------------
+var braintree = require("braintree");
+
+var gateway = braintree.connect({
+  environment: braintree.Environment.Sandbox,
+  merchantId: "f7jpbz5x8ct8bd4j",
+  publicKey: "9krzyxh6gv4jxnc7",
+  privateKey: "33b0ed542b06ef053b1270e1d30d59b9"
+});
+//--------------------------------------------------------------------------------------------------
+
 //-------------------------------------MySQL Connection---------------------------------------------
 var Sequelize = require('sequelize');
 var mysql = require('mysql');
@@ -55,9 +66,67 @@ ProjectTable.belongsTo(UserTable, {
 	foreignKey: 'userId'
 });
 
+var FundedProjects = sequelize.define('fundedprojects', {
+	id: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+  	userId: Sequelize.STRING,
+  	amount: Sequelize.INTEGER,
+  	nameoncard: Sequelize.STRING,
+  	addressoncard: Sequelize.STRING,
+  	cityoncard: Sequelize.STRING,
+  	pincodeoncard: Sequelize.INTEGER,
+  	email: Sequelize.STRING,
+  	cardNo: Sequelize.STRING,
+  	cardExpiry: Sequelize.STRING 
+});
+
+FundedProjects.belongsTo(ProjectTable,{
+	foreignKey: 'projectId'
+});
+
 //---------------------------------------------------------------------------------------------------
 
 module.exports = function(router){
+
+// -------------------Payment Gateway --- Step 2---------------------------
+	router.get("/client_token", function (req, res) {
+	  gateway.clientToken.generate({}, function (err, response) {
+	    res.send(response.clientToken);
+	  });
+	});
+// -------------------Payment Gateway --- Step 3----------------------------
+	router.post("/checkout", function (req, res) {
+		console.log("in checkout");
+		console.log(req.body.payload);
+
+	//--------------Braintree Payment--------------------
+	 //  gateway.transaction.sale({
+		//   amount: '10.00',
+		//   paymentMethodNonce: req.body.payload,
+		//   options: {
+		//     submitForSettlement: true
+		//   }
+		// }, function (err, result) {
+		//   if (err) {
+		//     console.error(err);
+		//     return;
+		//   }
+		 
+		//   if (result.success) {
+		//     console.log('Transaction ID: ' + result.transaction.id);
+		//     console.log('Transaction status: ' + result.transaction.status);
+		//     console.log('Transaction paymentInstrumentType : ' + result.transaction.paymentInstrumentType);
+		//     console.log(result.transaction);
+		//   } else {
+		//     console.error(result.message);
+		//   }
+		// });
+	  //-----------------------------------------------------------------------
+	});
+// -------------------Payment Gateway --- Step 4-----------------------------
+	
+//----------------------------------------------------------------------------
+
+
 	//http://localhost:8080/users
 	//USER REGISTRATION ROUTE
 	router.post('/users', function(req, res){	
@@ -167,8 +236,8 @@ module.exports = function(router){
 
 
 	router.use(function(req, res, next){
-		//console.log("in router Use");
-		//console.log(req.headers);
+		console.log("in router Use");
+		console.log(req.url);
 		var token = req.body.token || req.body.query || req.headers['x-access-token'];
 		if(token){
 			jwt.verify(token, secret, function(err, decoded){
@@ -181,7 +250,7 @@ module.exports = function(router){
 			});
 		}else{
 			//--------------Experiment--------------------
-			if(req.headers.referer.includes('exploreProjects')){
+			if(req.headers.referer.includes('exploreProjects') || req.url === '/getTopProjects'){
 				next();
 			}else
 			//--------------------------------------------			
@@ -636,5 +705,62 @@ router.post('/decline', function(req, res){
 	});
 });
 
+router.post("/pay", function (req, res) {
+	console.log("in checkout");
+	console.log(req.body);
+	sequelize.sync().then(function() {				
+		  return FundedProjects.create({	
+		  	projectId: req.body.projectId,
+		    amount: req.body.amount,
+		    userId: req.decoded.userId,
+		  	nameoncard: req.body.cardInfo.fname+" "+req.body.cardInfo.lname,
+		  	addressoncard: req.body.cardInfo.address,
+		  	cityoncard: req.body.cardInfo.city,
+		  	pincodeoncard: req.body.cardInfo.zipcode,
+		  	email: req.body.cardInfo.email,
+		  	cardNo: req.body.cardInfo.cardno,
+		  	cardExpiry: req.body.cardInfo.expiry
+		  });
+		}).then(function(record) {
+		  // console.log(record.get({
+		  //   plain: true
+		  // }));		  
+		  res.json({success:true, message:'Payment Done successfully. Thank you for your contribution.'});
+		}).catch(function(err){
+			if(err) throw err;
+		});	
+});
+
+router.get('/getAllFunded', function(req, res){
+	console.log("in getAllFunded");
+	sequelize.query('SELECT p.title, p.description, p.category, p.address, f.amount, f.nameoncard, f.createdAt FROM fundedprojects as f inner join projects as p WHERE f.userId=:userId and p.projectId = f.projectId', 
+		{replacements: { userId: req.decoded.userId }, type: sequelize.QueryTypes.SELECT}
+		).then(function(projects){
+			console.log(projects);
+			if(projects){
+				res.json({success: true, projects: projects, curUser: req.decoded.username});								
+			}else{
+				res.json({success: false, message: "No Projects Found"});
+			}
+		}).catch(function(err){
+			if(err) console.log(err);
+		});	
+});
+
+router.get('/getTopProjects', function(req, res){
+	console.log("in getTopProjects");
+	sequelize.query('SELECT p.*, u.firstname, u.lastname from projects as p inner join users as u where p.authorized = 1 and p.userId = u.userId group by p.projectId order by p.createdAt DESC LIMIT 3', 
+		{type: sequelize.QueryTypes.SELECT}
+		).then(function(projects){
+			//console.log(projects);
+			if(projects){
+				res.json({success: true, projects: projects});								
+			}else{
+				res.json({success: false, message: "No Projects Found"});
+			}
+		}).catch(function(err){
+			if(err) console.log(err);
+		});	
+});
 	return router;
 }

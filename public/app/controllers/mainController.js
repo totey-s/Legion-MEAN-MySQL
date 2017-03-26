@@ -1,8 +1,24 @@
 var app = angular.module('mainController', ['authServices', 'userServices', 'projectServices']);
 
-app.controller('mainCtrl', function(Auth, $timeout, $location, $rootScope, User, $interval, $window, $route, AuthToken, Project){
+app.controller('mainCtrl', function(Auth, $scope, $timeout, $location, $rootScope, User, $interval, $window, $route, AuthToken, Project){
 	var appData = this;	
 	appData.loadme = false;
+
+	appData.getTopProjects = function(){
+		console.log('getTopProjects');
+		Project.getTopProjects().then(function(data){
+			console.log(data.data.projects);			
+			if(data.data.projects.length !== 0){
+				appData.projects = data.data.projects;
+				$scope.projects = appData.projects;
+				appData.noProjects = false;
+			}else{
+				appData.noProjects = true;
+			}
+		});
+	};
+
+	appData.getTopProjects();
 	
 	appData.checkSession = function(){
 		if(Auth.isLoggedIn()){
@@ -40,6 +56,7 @@ app.controller('mainCtrl', function(Auth, $timeout, $location, $rootScope, User,
 		appData.modalHeader = undefined;
 		appData.modalBody = undefined;
 		appData.hideButton = false;
+		appData.load = false;
 
 		if(option === 1){
 			appData.modalHeader = "Timeout Warning";
