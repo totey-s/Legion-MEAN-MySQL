@@ -168,13 +168,23 @@ module.exports = function(router){
 			  	password: user.password,	  
 			  	username: user.username
 			  });
-			}).then(function(record) {
-			  console.log(record.get({
+			}).then(function(userData) {
+			  console.log(userData.get({
 			    plain: true
 			  }));
-			  // console.log("UserId: "+record.userId);
-			  var token = jwt.sign({ userId: record.userId, fname: user.fname, lname: user.lname, username: user.username, email: user.email, active: user.active}, secret, {expiresIn: '24h'});
-			  res.json({success:true, message:'User Created successfully', token: token});
+			  sequelize.sync().then(function() {				
+				  return AccessTable.create({			  	
+				    loginTime: sequelize.literal('CURRENT_TIMESTAMP'),
+				    userId: userData.userId
+				  });
+				}).then(function(record) {												  					
+				  var token = jwt.sign({ userId:userData.userId, fname: userData.firstname, lname: userData.lastname, username: userData.username, 
+					email: userData.email, permission: userData.permission, active: userData.active, accessId: record.id }, 
+					secret, {expiresIn: '24h'});
+				res.json({success:true, message:'User Created successfully!', token: token});
+				});	
+			  // var token = jwt.sign({ userId: record.userId, fname: user.fname, lname: user.lname, username: user.username, email: user.email, active: user.active}, secret, {expiresIn: '24h'});
+			  // res.json({success:true, message:'User Created successfully', token: token});
 			});
 			//-----------------------------------------------------------------------------------------------------------------------------
 		}
@@ -233,15 +243,10 @@ module.exports = function(router){
 						    loginTime: sequelize.literal('CURRENT_TIMESTAMP'),
 						    userId: userData.dataValues.userId
 						  });
-						}).then(function(record) {						
-						  /*console.log(record.get({
-						    plain: true
-						  }));	*/						  
-						  // console.log("RECORD::::::::::::::"+record.id);						
+						}).then(function(record) {												  					
 						  var token = jwt.sign({ userId:userData.dataValues.userId, fname: userData.dataValues.firstname, lname: userData.dataValues.lastname, username: userData.dataValues.username, 
 							email: userData.dataValues.email, permission: userData.dataValues.permission, active: userData.dataValues.active, accessId: record.id }, 
 							secret, {expiresIn: '24h'});
-						//console.log(token);
 						res.json({success:true, message:'User Authenticated!', token: token});
 						});	
 						
