@@ -8,6 +8,22 @@ app.factory('Auth', function($http, AuthToken){
 		//console.log(loginData);
 		return $http.post('/api/authenticate', loginData).then(function(data){
 			//console.log(data);
+			/*
+			if(data.data.success){
+				console.log("********************"+data.data.token);
+				var accessId = $http.post('/api/accessLog', loginData).then(function(temp){
+					console.log("********************"+temp.data.success);
+				});
+			}
+			*/
+			/*
+			if(data.data.success){
+				console.log(data.data.token);
+				$http.post('/api/accessLog', loginData).then(function(data){
+					console.log(data.data.success);
+				}
+			}
+			*/
 			AuthToken.setToken(data.data.token);
 			return data;
 		});
@@ -32,8 +48,11 @@ app.factory('Auth', function($http, AuthToken){
 	};
 
 	//Auth.logout();
-	authFactory.logout = function(){
-		AuthToken.setToken();
+	authFactory.logout = function(){	
+		return $http.post('/api/loglogout').then(function(data){
+			AuthToken.setToken();	
+			return data.data.success;
+		});		
 	};
 
 	return authFactory;

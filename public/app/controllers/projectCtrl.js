@@ -1,6 +1,6 @@
 var app = angular.module('projectController',['projectServices']);
 
-app.controller('exploreProjectCtrl', function($scope, Project){
+app.controller('exploreProjectCtrl', function($scope, Project, $timeout){
 	var appData = this;
 
 	$scope.currentPage = 1;
@@ -8,10 +8,12 @@ app.controller('exploreProjectCtrl', function($scope, Project){
 	appData.limit = 5;
 	appData.loading = true;
 	//console.log("In Project Explore");
-
-	console.log(Project.getData().length);
-	if(Project.getData().length>0){
+	
+	if(Project.getData()){
 		appData.showSuccess = Project.getData();	
+		$timeout(function(){
+			appData.showSuccess = false;
+		}, 3000);
 	}	
 
 	var showApprovedProjects = function(){		
@@ -34,7 +36,7 @@ app.controller('exploreProjectCtrl', function($scope, Project){
 	showApprovedProjects();
 
 	appData.fund = function(projectId){
-		console.log(projectId);
+		//console.log(projectId);
 		Project.fund(projectId).then(function(data){
 
 		});
@@ -80,7 +82,7 @@ app.controller('exploreProjectCtrl', function($scope, Project){
     //-------------------Model Amount-------------------------------
 	appData.showModal = function(projectId){
 		appData.projectId = projectId;
-		console.log(appData.projectId);
+		//console.log(appData.projectId);
 		$("#amountModel").modal({backdrop: "static"});
 	};
 
@@ -98,11 +100,11 @@ app.filter('pagination', function(){
 app.controller('fundProjectCtrl', function($scope, $routeParams, Project, $location){
 	$("#amountModel").modal("hide");
 	var appData = this;
-	console.log($routeParams.id);
+	//console.log($routeParams.id);
 	appData.loading = false;
 
 	appData.clientToken = function(){
-		console.log('in clientToken');
+		//console.log('in clientToken');
 		var colorTransition = 'color 160ms linear';
 		Project.getClientToken().then(function(data){
 			var clientToken = data.data;
@@ -138,16 +140,16 @@ app.controller('fundProjectCtrl', function($scope, $routeParams, Project, $locat
 	appData.fund = function(cardInfo){
 		appData.loading = true;
 		var payload = {};
-		console.log('in Fund');
-		console.log(appData.cardInfo);
-		console.log($routeParams.id);
+		//console.log('in Fund');
+		//console.log(appData.cardInfo);
+		//console.log($routeParams.id);
 		var id = $routeParams.id.split('_');
 		payload = {cardInfo: appData.cardInfo, projectId: id[0], amount: id[1]};
-		console.log(payload);
+		//console.log(payload);
 		Project.pay(payload).then(function(data){
 			appData.loading = false;
 			if(data.data.success){
-				console.log(data.data.message);	
+				//console.log(data.data.message);	
 				Project.addData(data.data.message);
 				$location.path('/exploreProjects');				
 			}			
@@ -156,7 +158,7 @@ app.controller('fundProjectCtrl', function($scope, $routeParams, Project, $locat
 });
 
 app.controller('projectCtrl',['$scope', 'Project', function($scope, Project){
-	console.log("Project Controller");	
+	//console.log("Project Controller");	
 	var appData = this;
 
 	appData.noProjects = true;
@@ -170,7 +172,7 @@ app.controller('projectCtrl',['$scope', 'Project', function($scope, Project){
 
 	appData.addProject = function(projectData){
 		appData.load = true;
-		console.log(appData.projectData);
+		//console.log(appData.projectData);
 		Project.add(appData.projectData).then(function(data){
 			appData.load = false;
 			if(data.data.success){
@@ -186,7 +188,7 @@ app.controller('projectCtrl',['$scope', 'Project', function($scope, Project){
 
 	var showProjectsOfCurrentUser = function(){		
 		Project.getAllUserProjects().then(function(data){			
-			console.log(data.data.projects);
+			//console.log(data.data.projects);
 			if(data.data.projects.length !== 0){
 				appData.projects = data.data.projects;	
 				appData.noProjects = false;
@@ -201,7 +203,7 @@ app.controller('projectCtrl',['$scope', 'Project', function($scope, Project){
 }]);
 
 app.controller('projectManagementCtrl', function($scope, Project, $timeout){
-	console.log("Project Management Controller");	
+	//console.log("Project Management Controller");	
 	var appData = this;
 
 	appData.noProjects = true;
@@ -278,8 +280,8 @@ app.controller('projectManagementCtrl', function($scope, Project, $timeout){
 
 	appData.escalate = function(escalateData, title, projectId){
 		appData.load = true;
-		console.log(appData.escalateData);
-		console.log(title+"  "+projectId);
+		//console.log(appData.escalateData);
+		//console.log(title+"  "+projectId);
 		appData.escalateData.title = title;
 		appData.escalateData.projectId = projectId;
 		Project.escalate(appData.escalateData).then(function(data){
@@ -299,7 +301,7 @@ app.controller('projectManagementCtrl', function($scope, Project, $timeout){
 });
 
 app.controller('fundedProjectCtrl', function(Project){
-	console.log("Project Controller");	
+	//console.log("Project Controller");	
 	var appData = this;
 
 	appData.noProjects = true;
@@ -311,7 +313,7 @@ app.controller('fundedProjectCtrl', function(Project){
 		appData.isModerator = false;
 		Project.getAllFunded().then(function(data){	
 		appData.load = false;
-		console.log(data.data.projects);					
+		//console.log(data.data.projects);					
 			if(data.data.projects.length !== 0){
 				appData.projects = data.data.projects;			
 				appData.noProjects = false;

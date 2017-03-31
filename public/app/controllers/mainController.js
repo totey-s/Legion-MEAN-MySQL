@@ -4,21 +4,36 @@ app.controller('mainCtrl', function(Auth, $scope, $timeout, $location, $rootScop
 	var appData = this;	
 	appData.loadme = false;
 
-	appData.getTopProjects = function(){
-		console.log('getTopProjects');
-		Project.getTopProjects().then(function(data){
-			console.log(data.data.projects);			
+	appData.getTopRecentProjects = function(){
+		console.log('getTopRecentProjects');
+		// var filter = {option: 'recent'};
+		var filter = 'recent';
+		Project.getTopProjects(filter).then(function(data){
+			//console.log(data.data.projects);			
 			if(data.data.projects.length !== 0){
 				appData.projects = data.data.projects;
-				$scope.projects = appData.projects;
+				$scope.recentProjects = appData.projects;
+				appData.noProjects = false;
+			}else{
+				appData.noProjects = true;
+			}
+		});
+	};	
+
+	appData.getTopFundedProjects = function(){
+		// var filter = {option: 'amount'};
+		var filter = 'amount';		
+		Project.getTopProjects(filter).then(function(data){
+			//console.log(data.data.projects);			
+			if(data.data.projects.length !== 0){
+				appData.projects = data.data.projects;
+				$scope.fundedProjects = appData.projects;
 				appData.noProjects = false;
 			}else{
 				appData.noProjects = true;
 			}
 		});
 	};
-
-	appData.getTopProjects();
 	
 	appData.checkSession = function(){
 		if(Auth.isLoggedIn()){
@@ -70,10 +85,14 @@ app.controller('mainCtrl', function(Auth, $scope, $timeout, $location, $rootScop
 			appData.modalBody = "Logging you out...";	
 			$("#myModal").modal({backdrop: "static"});
 			$timeout(function(){
-				Auth.logout();
-				$location.path('/logout');
-				hideModal();
-				$route.reload();
+				Auth.logout().then(function(data){
+					console.log("Back from Logout::::"+data);
+					if(data){
+						$location.path('/logout');
+						hideModal();
+						$route.reload();
+					}
+				});				
 			}, 2000);
 		}
 		$timeout(function(){
@@ -121,6 +140,11 @@ app.controller('mainCtrl', function(Auth, $scope, $timeout, $location, $rootScop
 		
 		if(!appData.checkingSession){
 			appData.checkSession();
+		}
+
+		if(($location.url() === '/') || ($location.url() === '/#') || ($location.url() === '/#services')){
+			appData.getTopRecentProjects();	
+			appData.getTopFundedProjects();
 		}
 
 		if(Auth.isLoggedIn()){

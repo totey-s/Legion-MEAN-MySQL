@@ -49,15 +49,14 @@ app.factory('Project', function($http){
 		return $http.get('/api/getAllFunded');
 	}
 
-	projectFactory.getTopProjects = function(){
-		console.log('getTopProjects service');
-		return $http.get('/api/getTopProjects');	
+	projectFactory.getTopProjects = function(filter){
+		return $http.get('/api/getTopProjects/'+filter);	
 	}
 
 
-	var data = [];
+	var data;
 	projectFactory.addData = function(obj){
-		data.push(obj);
+		data = obj;
 	}
 
 	projectFactory.getData = function(){

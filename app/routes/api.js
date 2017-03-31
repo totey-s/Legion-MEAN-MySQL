@@ -31,6 +31,12 @@ sequelize.authenticate().then(function(err){
 	}
 });
 
+var AccessTable = sequelize.define('accessLog', {
+	id: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+	loginTime: Sequelize.DATE, 
+	logoutTime: {type: Sequelize.DATE, defaultValue: null}
+});
+
 var UserTable = sequelize.define('user', {
 	userId: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
   	firstname: Sequelize.STRING,
@@ -55,6 +61,11 @@ var ProjectTable = sequelize.define('projects', {
   	authorized: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 0},
   	escalate: {type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
   	escalateReason: {type: Sequelize.STRING}
+});
+
+UserTable.hasMany(AccessTable, {
+	foreignKey: 'userId',
+	constraints: false,
 });
 
 UserTable.hasMany(ProjectTable, {
@@ -95,8 +106,8 @@ module.exports = function(router){
 	});
 // -------------------Payment Gateway --- Step 3----------------------------
 	router.post("/checkout", function (req, res) {
-		console.log("in checkout");
-		console.log(req.body.payload);
+		// console.log("in checkout");
+		// console.log(req.body.payload);
 
 	//--------------Braintree Payment--------------------
 	 //  gateway.transaction.sale({
@@ -131,14 +142,14 @@ module.exports = function(router){
 	//USER REGISTRATION ROUTE
 	router.post('/users', function(req, res){	
 		var user = new User();
-		console.log(req.body);
+		// console.log(req.body);
 		user.username = req.body.username;
 		user.password = req.body.password;
 		bcrypt.hash(user.password, null, null, function(err, hash){
 		    if(err) console.log(err);
 		    user.password = hash;		
-		    console.log("Encrypted Pass: "+hash);		    
-		    console.log("Encrypted Pass: "+user.password);
+		    // console.log("Encrypted Pass: "+hash);		    
+		    // console.log("Encrypted Pass: "+user.password);
 		  });
 		user.email = req.body.email;
 		user.fname = req.body.fname;
@@ -161,7 +172,7 @@ module.exports = function(router){
 			  console.log(record.get({
 			    plain: true
 			  }));
-			  console.log("UserId: "+record.userId);
+			  // console.log("UserId: "+record.userId);
 			  var token = jwt.sign({ userId: record.userId, fname: user.fname, lname: user.lname, username: user.username, email: user.email, active: user.active}, secret, {expiresIn: '24h'});
 			  res.json({success:true, message:'User Created successfully', token: token});
 			});
@@ -202,7 +213,7 @@ module.exports = function(router){
 	//USER LOGIN ROUTE
 	//http://localhost:8080/api/authenticate
 	router.post('/authenticate', function(req, res){
-		console.log("Authenticating....")		
+		console.log("Authenticating....");
 		//-----------------Find in MySQL----------------------------------------------------------------------
 		UserTable.find({
 		  where: {username: req.body.username, active: true}
@@ -217,11 +228,23 @@ module.exports = function(router){
 					}
 					else
 					{
-						var token = jwt.sign({ userId:userData.dataValues.userId, fname: userData.dataValues.firstname, lname: userData.dataValues.lastname, username: userData.dataValues.username, 
-							email: userData.dataValues.email, permission: userData.dataValues.permission, active: userData.dataValues.active }, 
+						sequelize.sync().then(function() {				
+						  return AccessTable.create({			  	
+						    loginTime: sequelize.literal('CURRENT_TIMESTAMP'),
+						    userId: userData.dataValues.userId
+						  });
+						}).then(function(record) {						
+						  /*console.log(record.get({
+						    plain: true
+						  }));	*/						  
+						  // console.log("RECORD::::::::::::::"+record.id);						
+						  var token = jwt.sign({ userId:userData.dataValues.userId, fname: userData.dataValues.firstname, lname: userData.dataValues.lastname, username: userData.dataValues.username, 
+							email: userData.dataValues.email, permission: userData.dataValues.permission, active: userData.dataValues.active, accessId: record.id }, 
 							secret, {expiresIn: '24h'});
 						//console.log(token);
 						res.json({success:true, message:'User Authenticated!', token: token});
+						});	
+						
 					}
 				});
 			} else{
@@ -230,14 +253,13 @@ module.exports = function(router){
 			
 		}).catch(function(err){
 			if(err) throw err;
-		});		
+		});				
 		//----------------------------------------------------------------------------------------------------
 	});
 
-
 	router.use(function(req, res, next){
-		console.log("in router Use");
-		console.log(req.url);
+		// console.log("in router Use");
+		// console.log(req.url);
 		var token = req.body.token || req.body.query || req.headers['x-access-token'];
 		if(token){
 			jwt.verify(token, secret, function(err, decoded){
@@ -250,7 +272,7 @@ module.exports = function(router){
 			});
 		}else{
 			//--------------Experiment--------------------
-			if(req.headers.referer.includes('exploreProjects') || req.url === '/getTopProjects'){
+			if(req.headers.referer.includes('exploreProjects') || req.url.includes('/getTopProjects')){
 				next();
 			}else
 			//--------------------------------------------			
@@ -261,6 +283,22 @@ module.exports = function(router){
 	router.post('/me', function(req, res){
 		res.send(req.decoded);
 	});	
+
+
+	router.post('/loglogout', function(req, res){
+		// console.log("Logout::::::::::::::::::::::::::"+req.decoded.accessId);
+		AccessTable.find({
+		  where: {id: req.decoded.accessId}
+		}).then(function(accessLog){
+			if(accessLog){
+				accessLog.updateAttributes({
+					logoutTime: sequelize.literal('CURRENT_TIMESTAMP')
+				}).then(function(){
+					res.json({success: true});
+				});
+			}
+		});
+	});
 
 	router.get('/renewToken/:username', function(req, res){
 		UserTable.find({
@@ -747,9 +785,18 @@ router.get('/getAllFunded', function(req, res){
 		});	
 });
 
-router.get('/getTopProjects', function(req, res){
-	console.log("in getTopProjects");
-	sequelize.query('SELECT p.*, u.firstname, u.lastname from projects as p inner join users as u where p.authorized = 1 and p.userId = u.userId group by p.projectId order by p.createdAt DESC LIMIT 3', 
+router.get('/getTopProjects/:filter', function(req, res){
+	// console.log("in getTopProjects");
+	// sequelize.query('SELECT p.*, u.firstname, u.lastname from projects as p inner join users as u where p.authorized = 1 and p.userId = u.userId group by p.projectId order by p.createdAt DESC LIMIT 3', 
+	// console.log("OPtion: "+req.params.filter);
+	
+	var query = '';
+	if(req.params.filter === 'recent'){
+		query = 'SELECT p.*, u.firstname, u.lastname from projects as p inner join users as u where p.authorized = 1 and p.userId = u.userId group by p.projectId order by p.createdAt DESC LIMIT 3';
+	}else if(req.params.filter === 'amount'){
+		query = 'SELECT * FROM legion.amountcollectedforeachproject limit 3';
+	}
+	sequelize.query(query, 
 		{type: sequelize.QueryTypes.SELECT}
 		).then(function(projects){
 			//console.log(projects);
