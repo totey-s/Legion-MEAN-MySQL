@@ -1,7 +1,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt-nodejs');
-var titlize = require('mongoose-title-case');
+// var titlize = require('mongoose-title-case');
+var toTitlelize = require('to-titlelize');
 var validate = require('mongoose-validator');
 
 var nameValidator = [
@@ -55,8 +56,8 @@ var passwordValidator = [
 ];
 
 var UserSchema = new Schema({
-  fname:{type:String, required: true, validate: nameValidator},
-  lname:{type:String, required: true, validate: nameValidator},
+  fname:{type:String, set: toTitlelize, required: true, validate: nameValidator},
+  lname:{type:String, set: toTitlelize, required: true, validate: nameValidator},
   username:{type:String, lowercase: true, required: true, unique: true, validate: usernameValidator},
   password:{type:String, required: true, validate: passwordValidator},
   email:{type:String, required: true, lowercase: true, unique: true, validate: emailValidator},
@@ -76,9 +77,9 @@ UserSchema.pre('save', function(next) {
 });
 
 // Will turn BOB DOYLE to Bob Doyle 
-UserSchema.plugin(titlize, {
+/*UserSchema.plugin(titlize, {
   paths: [ 'name' ] // Array of paths 
-});
+});*/
 
 UserSchema.methods.comparePassword = function(password){
 	return bcrypt.compareSync(password, this.password);

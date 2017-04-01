@@ -2,7 +2,7 @@
 <div class="container">
 <div class="row">
 <div class="col-lg-8 col-lg-offset-2">
-<form name="regForm" class="form-horizontal" ng-submit="register.regUser(regData, regForm.$valid);" novalidate>
+<form name="regForm" class="form-horizontal" ng-submit="register.regUser(regData, regForm.$valid, confirmed);" novalidate>
   <fieldset>
   
   <div id="legend">
@@ -80,12 +80,13 @@
     </div>
  	<br/>
     <!-- Confirm Password-->
-    <div ng-class="{'has-success':confirmed && !regForm.cpassword.$error.required,'has-error':(!confirmed && !regForm.cpassword.$error.required) || (regForm.cpassword.$error.required && !regForm.cpassword.$pristine) || (regForm.$submitted && regForm.cpassword.$error.required)}">
-      <!-- Confirm Password-->
-      <label for="cpassword">Confirm Password</label>
-      <input type="password" id="cpassword" name="cpassword" ng-model="confirm" placeholder="Please Confirm password" match="{{[firstPassword]}}" ng-change="register.regData.password = confirm" class="form-control" required>   
-      <span class="help-block" ng-show="(!regForm.cpassword.$pristine && regForm.cpassword.$error.required) || (regForm.$submitted && regForm.cpassword.$error.required)">This Field is required</span> 
-      <span class="help-block" ng-show="!confirmed && !regForm.cpassword.$pristine && regForm.firstPassword.$valid">Passwords do not match</span>
+    <div ng-class="{ 'has-success':confirmed && !regForm.confirmPassword.$error.required, 'has-error':(!confirmed && !regForm.confirmPassword.$error.required) || (regForm.confirmPassword.$error.required && !regForm.confirmPassword.$pristine) || (regForm.$submitted && regForm.confirmPassword.$error.required) }">
+        <!-- Confirm Password Input -->
+        <label>Confirm Password:</label>
+        <input ng-disabled="register.disabled" class="form-control" type="password" name="confirmPassword" placeholder="Confirm Password *" match="{{[firstPassword]}}" ng-change="register.regData.password = confirm" ng-model="confirm" required>
+        <!-- Confirm Password Validation -->
+        <p class="help-block" ng-show="(!regForm.confirmPassword.$pristine && regForm.confirmPassword.$error.required) || (regForm.$submitted && regForm.confirmPassword.$error.required)">This field is required</p>
+        <p class="help-block" ng-show="!confirmed && !regForm.confirmPassword.$pristine && regForm.firstPassword.$valid">Passwords do not match</p>
     </div>
   <br/>
 

@@ -21,14 +21,18 @@ app.controller('exploreProjectCtrl', function($scope, Project, $timeout){
 		Project.getAllApprovedProjects().then(function(data){	
 			appData.loading = false;		
 			//console.log(data.data.projects);			
-			if(data.data.projects.length !== 0){
-				appData.projects = data.data.projects;
-				$scope.projects = appData.projects;
-				$scope.curUser = data.data.curUser;
-				appData.noProjects = false;
+			if(data.data.success){
+				if(data.data.projects.length !== 0){
+					appData.projects = data.data.projects;
+					$scope.projects = appData.projects;
+					$scope.curUser = data.data.curUser;
+					appData.noProjects = false;
+				}else{
+					appData.noProjects = true;
+				}	
 			}else{
 				appData.noProjects = true;
-			}
+			}		
 			
 		});
 	};

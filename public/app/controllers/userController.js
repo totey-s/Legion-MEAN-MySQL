@@ -4,10 +4,10 @@ app.controller('registerController', function($http, $location, $timeout, User){
 
 	var appData = this;
 
-	appData.regUser = function(regData, valid){
+	appData.regUser = function(regData, valid, confirmed){
 		appData.loading = true;
 		appData.errorMsg = false;
-		if(valid){
+		if(valid && confirmed){
 			console.log(appData.regData);
 			User.create(appData.regData).then(function(data){
 				if(data.data.success){
@@ -38,7 +38,7 @@ app.controller('registerController', function($http, $location, $timeout, User){
 		appData.usernameMsg = false;
 		appData.usernameInvalid = false;
 		User.checkUsername(appData.regData).then(function(data){
-			console.log(data);
+			// console.log(data);
 			if(data.data.success){
 				appData.checkingUsername = false;
 				appData.usernameInvalid = false;				

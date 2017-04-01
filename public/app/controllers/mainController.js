@@ -10,13 +10,18 @@ app.controller('mainCtrl', function(Auth, $scope, $timeout, $location, $rootScop
 		var filter = 'recent';
 		Project.getTopProjects(filter).then(function(data){
 			//console.log(data.data.projects);			
-			if(data.data.projects.length !== 0){
-				appData.projects = data.data.projects;
-				$scope.recentProjects = appData.projects;
-				appData.noProjects = false;
+			if(data.data.success){
+				if(data.data.projects.length !== 0){
+					appData.projects = data.data.projects;
+					$scope.recentProjects = appData.projects;
+					appData.noProjects = false;
+				}else{
+					appData.noProjects = true;				
+				}
 			}else{
 				appData.noProjects = true;
 			}
+			
 		});
 	};	
 
@@ -25,13 +30,18 @@ app.controller('mainCtrl', function(Auth, $scope, $timeout, $location, $rootScop
 		var filter = 'amount';		
 		Project.getTopProjects(filter).then(function(data){
 			//console.log(data.data.projects);			
-			if(data.data.projects.length !== 0){
-				appData.projects = data.data.projects;
-				$scope.fundedProjects = appData.projects;
-				appData.noProjects = false;
+			if(data.data.success){
+				if(data.data.projects.length !== 0){
+					appData.projects = data.data.projects;
+					$scope.fundedProjects = appData.projects;
+					appData.noProjects = false;
+				}else{
+					appData.noProjects = true;
+				}
 			}else{
 				appData.noProjects = true;
-			}
+			}	
+			
 		});
 	};
 	

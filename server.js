@@ -10,7 +10,6 @@ var path = require('path');
 var moment = require('moment');
 
 //-------------------------------------MySQL Connection---------------------------------------------
-/*
 var Sequelize = require('sequelize');
 var mysql = require('mysql');
 
@@ -20,21 +19,75 @@ var sequelize = new Sequelize('legion', 'root', 'root', {
 });
 
 sequelize.authenticate().then(function(err){
-	if(err){
-		console.log('Unable to connect to the database:', err);
-	}else{
-		console.log('Connection has been established successfully.');
-	}
+  if(err){
+    console.log('Unable to connect to the database:', err);
+  }else{
+    console.log('Connection has been established successfully.');
+  }
 });
-*/
 
-//Creating a table called user with columns username and birthday of types String and Date respectively
-/*
-var User = sequelize.define('user', {
-  username: Sequelize.STRING,
-  birthday: Sequelize.DATE
+var AccessTable = sequelize.define('accessLog', {
+  id: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+  loginTime: Sequelize.DATE, 
+  logoutTime: {type: Sequelize.DATE, defaultValue: null}
 });
-*/
+
+var UserTable = sequelize.define('user', {
+  userId: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+    firstname: Sequelize.STRING,
+    lastname: Sequelize.STRING,
+    email: Sequelize.STRING,
+    password: Sequelize.STRING,   
+    username: Sequelize.STRING,
+    permission: {type: Sequelize.STRING, allowNull: false, defaultValue: 'user'},
+    active: {type: Sequelize.BOOLEAN, allowNull: false, defaultValue: true}
+});
+
+var ProjectTable = sequelize.define('projects', {
+  projectId: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+    username: Sequelize.STRING,
+    title:  Sequelize.STRING,
+    description: Sequelize.STRING,
+    category: Sequelize.STRING,   
+    address: Sequelize.STRING,
+    goal: Sequelize.INTEGER,
+    duration: Sequelize.INTEGER,
+    complete: {type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
+    authorized: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 0},
+    escalate: {type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false},
+    escalateReason: {type: Sequelize.STRING}
+});
+
+UserTable.hasMany(AccessTable, {
+  foreignKey: 'userId',
+  constraints: false,
+});
+
+UserTable.hasMany(ProjectTable, {
+  foreignKey: 'userId',
+  constraints: false,
+});
+
+ProjectTable.belongsTo(UserTable, {
+  foreignKey: 'userId'
+});
+
+var FundedProjects = sequelize.define('fundedprojects', {
+  id: {type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true},
+    userId: Sequelize.STRING,
+    amount: Sequelize.INTEGER,
+    nameoncard: Sequelize.STRING,
+    addressoncard: Sequelize.STRING,
+    cityoncard: Sequelize.STRING,
+    pincodeoncard: Sequelize.INTEGER,
+    email: Sequelize.STRING,
+    cardNo: Sequelize.STRING,
+    cardExpiry: Sequelize.STRING 
+});
+
+FundedProjects.belongsTo(ProjectTable,{
+  foreignKey: 'projectId'
+});
 
 //Adding record of janedoe to table 'user'.
 /*

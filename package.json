@@ -10,7 +10,8 @@
     "mysql2": "^1.2.0",
     "nodemailer": "^3.1.5",
     "nodemailer-sendgrid-transport": "^0.2.0",
-    "sequelize": "^3.30.2"
+    "sequelize": "^3.30.2",
+    "to-titlelize": "0.0.2"
   },
   "devDependencies": {},
   "scripts": {

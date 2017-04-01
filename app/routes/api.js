@@ -201,6 +201,11 @@ module.exports = function(router){
 			}else{
 				res.json({success: true, message: 'Valid Username'})
 			}
+		}).catch(function(err){
+			if(err){
+				console.log(err);
+				res.json({success: true, message: 'Valid Username'});
+			}
 		});
 		//-------------------------------------------------------------------------------------------
 	});
@@ -214,7 +219,12 @@ module.exports = function(router){
 			if(userData){
 				res.json({success: false, message: 'An account with this email already exists.'});
 			}else{
-				res.json({success: true, message: 'Valid Username'})
+				res.json({success: true, message: 'Valid Email'})
+			}
+		}).catch(function(err){
+			if(err){
+				console.log(err);
+				res.json({success: true, message: 'Valid Email'});
 			}
 		});
 		//-------------------------------------------------------------------------------------------
@@ -612,7 +622,10 @@ router.get('/getAllApprovedProjects', function(req, res){
 				res.json({success: false, message: "No Projects Found"});
 			}
 		}).catch(function(err){
-			if(err) console.log(err);
+			if(err){ 
+				console.log(err);
+				res.json({success: false, message: "No Projects Found"});
+			}
 		});	
 		
 	/*
@@ -786,7 +799,10 @@ router.get('/getAllFunded', function(req, res){
 				res.json({success: false, message: "No Projects Found"});
 			}
 		}).catch(function(err){
-			if(err) console.log(err);
+			if(err){
+				console.log(err);
+				res.json({success: false, message: "No Projects Exists"});
+			}
 		});	
 });
 
@@ -811,7 +827,10 @@ router.get('/getTopProjects/:filter', function(req, res){
 				res.json({success: false, message: "No Projects Found"});
 			}
 		}).catch(function(err){
-			if(err) console.log(err);
+			if(err){
+				console.log(err);
+				res.json({success: false, message: "No Projects Exists"});
+			}
 		});	
 });
 	return router;
