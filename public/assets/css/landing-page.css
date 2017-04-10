@@ -31,8 +31,8 @@ h6 {
 }
 
 .intro-header {
-    padding-top: 50px; /* If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! */
-    padding-bottom: 50px;
+    /*padding-top: 50px;  If you're making other pages, make sure there is 50px of padding to make sure the navbar doesn't overlap content! 
+    padding-bottom: 50px;*/
     text-align: center;
     color: #f8f8f8;
     background: url(../img/intro-bg.jpg) no-repeat center center;
@@ -90,6 +90,11 @@ h6 {
     font-size: 14px;
     font-weight: 400;
     letter-spacing: 2px;
+}
+
+.content-section-a-home {
+    padding: 15px 0;
+    background-color: #f8f8f8;
 }
 
 .content-section-a {

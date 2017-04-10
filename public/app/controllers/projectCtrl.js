@@ -1,6 +1,6 @@
 var app = angular.module('projectController',['projectServices']);
 
-app.controller('exploreProjectCtrl', function($scope, Project, $timeout){
+app.controller('exploreProjectCtrl', function($scope, Project, $timeout,$location, $window){
 	var appData = this;
 
 	$scope.currentPage = 1;
@@ -85,9 +85,14 @@ app.controller('exploreProjectCtrl', function($scope, Project, $timeout){
     };
     //-------------------Model Amount-------------------------------
 	appData.showModal = function(projectId){
-		appData.projectId = projectId;
-		//console.log(appData.projectId);
-		$("#amountModel").modal({backdrop: "static"});
+		var token = $window.localStorage.getItem('token');
+		if(token === null){
+			$location.path('/login');
+		}else{
+			appData.projectId = projectId;
+			//console.log(appData.projectId);
+			$("#amountModel").modal({backdrop: "static"});
+		}		
 	};
 
     //---------------------PayPal------------------------------------------------------------------

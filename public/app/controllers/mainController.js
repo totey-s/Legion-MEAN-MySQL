@@ -12,7 +12,7 @@ app.controller('mainCtrl', function(Auth, $scope, $timeout, $location, $rootScop
 			//console.log(data.data.projects);			
 			if(data.data.success){
 				if(data.data.projects.length !== 0){
-					appData.projects = data.data.projects;
+					appData.projects = data.data.projects;					
 					$scope.recentProjects = appData.projects;
 					appData.noProjects = false;
 				}else{

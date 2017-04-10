@@ -4,6 +4,7 @@ var secret = 'kickstarter';
 var bcrypt = require('bcrypt-nodejs');
 
 //------------------------------------Braintree Payment Gateway --- Step 1------------------------------------
+/*
 var braintree = require("braintree");
 
 var gateway = braintree.connect({
@@ -12,6 +13,7 @@ var gateway = braintree.connect({
   publicKey: "9krzyxh6gv4jxnc7",
   privateKey: "33b0ed542b06ef053b1270e1d30d59b9"
 });
+*/
 //--------------------------------------------------------------------------------------------------
 
 //-------------------------------------MySQL Connection---------------------------------------------
@@ -287,7 +289,7 @@ module.exports = function(router){
 			});
 		}else{
 			//--------------Experiment--------------------
-			if(req.headers.referer.includes('exploreProjects') || req.url.includes('/getTopProjects')){
+			if((req.headers.referer.indexOf('exploreProjects') !== -1) || (req.url.indexOf('/getTopProjects') !== -1)){
 				next();
 			}else
 			//--------------------------------------------			
@@ -813,7 +815,7 @@ router.get('/getTopProjects/:filter', function(req, res){
 	
 	var query = '';
 	if(req.params.filter === 'recent'){
-		query = 'SELECT p.*, u.firstname, u.lastname from projects as p inner join users as u where p.authorized = 1 and p.userId = u.userId group by p.projectId order by p.createdAt DESC LIMIT 3';
+		query = 'SELECT p.title, p.description, p.category, p.address, p.goal, p.duration, p.complete, p.createdAt, u.username, u.firstname, u.lastname, f.funded from projects as p inner join users as u inner join amountcollectedforeachproject as f where p.authorized = 1 and p.userId = u.userId and p.projectId = f.projectId group by p.projectId order by p.createdAt DESC LIMIT 3';
 	}else if(req.params.filter === 'amount'){
 		query = 'SELECT * FROM legion.amountcollectedforeachproject limit 3';
 	}
