@@ -2,6 +2,9 @@ var User = require('../models/user');
 var jwt = require('jsonwebtoken');
 var secret = 'kickstarter';
 var bcrypt = require('bcrypt-nodejs');
+var PythonShell = require('python-shell');
+
+//PythonShell.defaultOptions = { scriptPath: '../scripts' };
 
 //------------------------------------Braintree Payment Gateway --- Step 1------------------------------------
 /*
@@ -808,11 +811,29 @@ router.get('/getAllFunded', function(req, res){
 		});	
 });
 
+
+router.get('/concurrentLogins', function(req, res){
+	var pyshell = new PythonShell.run('python.py', { scriptPath: 'D:\\Sample Apps\\NodeApps-Legion\\Legion-MEAN-MySQL\\app\\scripts'});
+
+	pyshell.on('message', function (message) { 
+	    // received a message sent from the Python script (a simple "print" statement)
+	    console.log(message);
+	});
+
+	// end the input stream and allow the process to exit
+	pyshell.end(function (err) {
+	    if (err){
+	        throw err;
+	    };
+	    console.log('finished');
+	});
+});
+
 router.get('/getTopProjects/:filter', function(req, res){
 	// console.log("in getTopProjects");
 	// sequelize.query('SELECT p.*, u.firstname, u.lastname from projects as p inner join users as u where p.authorized = 1 and p.userId = u.userId group by p.projectId order by p.createdAt DESC LIMIT 3', 
 	// console.log("OPtion: "+req.params.filter);
-	
+
 	var query = '';
 	if(req.params.filter === 'recent'){
 		query = 'SELECT p.title, p.description, p.category, p.address, p.goal, p.duration, p.complete, p.createdAt, u.username, u.firstname, u.lastname, f.funded from projects as p inner join users as u inner join amountcollectedforeachproject as f where p.authorized = 1 and p.userId = u.userId and p.projectId = f.projectId group by p.projectId order by p.createdAt DESC LIMIT 3';
